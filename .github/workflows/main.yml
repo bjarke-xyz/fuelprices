@@ -6,7 +6,7 @@ on:
       - 'ci-cd-testing'
 
 jobs:
-  docker:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -20,6 +20,7 @@ jobs:
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
       - name: Build and push
+        id: build
         uses: docker/build-push-action@v2
         with:
           context: .
@@ -27,6 +28,16 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           push: true
           tags: '${{ secrets.REGISTRY_URL }}/${{ github.event.repository.name }}'
-          # cache-from: 'type=registry,ref=${{ secrets.REGISTRY_URL }}/${{ github.event.repository.name }}:buildcache'
-          # cache-to: 'type=registry,ref=${{ secrets.REGISTRY_URL }}/${{ github.event.repository.name }}:buildcache,mode=max'
+      - name: Notify on error
+        uses: Ilshidur/action-discord@0.3.2
+        if: failure() && steps.build.outcome == 'failure'
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        with:
+          args: "The project {{ EVENT_PAYLOAD.repository.full_name }} could not build! https://github.com/{{ EVENT_PAYLOAD.repository.full_name }}/actions"
+  # release:
+  #   runs-on: ubuntu-latest
+  #   needs: build
+  #   steps:
+  #     - name: 
 
