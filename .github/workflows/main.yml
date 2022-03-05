@@ -34,7 +34,7 @@ jobs:
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         with:
-          args: "The project {{ EVENT_PAYLOAD.repository.full_name }} could not build! https://github.com/{{ EVENT_PAYLOAD.repository.full_name }}/actions"
+          args: "⚠️ The project {{ EVENT_PAYLOAD.repository.full_name }} could not build ⚠️  <https://github.com/{{ EVENT_PAYLOAD.repository.full_name }}/actions/runs/${{ github.run_id }}>"
   # release:
   #   runs-on: ubuntu-latest
   #   needs: build
