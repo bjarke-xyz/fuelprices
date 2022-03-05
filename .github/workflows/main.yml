@@ -34,7 +34,7 @@ jobs:
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         with:
-          args: "⚠️ {{ EVENT_PAYLOAD.repository.full_name }} failed to build ⚠️  <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}>"
+          args: "⚠️ {{ EVENT_PAYLOAD.repository.full_name }} failed to build. <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}>"
   release:
     runs-on: ubuntu-latest
     needs: build
@@ -53,12 +53,12 @@ jobs:
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         with:
-          args: "⚠️ {{ EVENT_PAYLOAD.repository.full_name }} failed to release ⚠️  <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}>"
+          args: "⚠️ {{ EVENT_PAYLOAD.repository.full_name }} failed to release. <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}>"
       - name: Notify on success
         uses: Ilshidur/action-discord@0.3.2
         if: success() && steps.ssh.outcome == 'success'
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         with:
-          args: "🚀 {{ EVENT_PAYLOAD.repository.full_name }} has been released 🚀️  <https://github.com/${{ github.repository }}/>"
+          args: "🚀 {{ EVENT_PAYLOAD.repository.full_name }} has been released. <https://github.com/${{ github.repository }}/>"
 
