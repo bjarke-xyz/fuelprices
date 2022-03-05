@@ -19,7 +19,7 @@ func TestHandlerPricesToday(t *testing.T) {
 		handlerCtx := handlers.NewHandlerCtx(&SamePrices{})
 		handlers.HandlerPricesToday(handlerCtx)(res, req)
 
-		expected := "the price will not changeTHIS WILL CAUSE TEST TO FAIL :)"
+		expected := "the price will not change"
 		if !strings.Contains(res.Body.String(), expected) {
 			t.Errorf("expected body of %q to contain %q", res.Body.String(), expected)
 		}
