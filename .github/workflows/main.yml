@@ -2,24 +2,31 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main]
+    branches:
+      - 'ci-cd-testing'
 
 jobs:
-  deploy:
-    name: CD Pipeline
+  docker:
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to prod
-        uses: appleboy/ssh-action@v0.0.7
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Login to private registry
+        uses: docker/login-action@v1
         with:
-          username: ${{ secrets.SSH_DEPLOYMENT_USERNAME }}
-          host: ${{ secrets.SSH_DEPLOYMENT_HOST }}
-          key: ${{ secrets.SSH_DEPLOYMENT_KEY }}
-          script: cd ${{ secrets.SSH_DEPLOYMENT_PROJECT_DIR }} && git reset --hard && git pull origin main && ${{ secrets.SSH_DEPLOYMENT_PROJECT_DIR }}/deployment.sh
+          registry: ${{ secrets.REGISTRY_URL }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          builder: ${{ steps.buildx.outputs.name }}
+          push: true
+          tags: '${{ secrets.REGISTRY_URL }}/${{ github.event.repository.name }}'
+          cache-from: 'type=registry,ref=${{ secrets.REGISTRY_URL }}/${{ github.event.repository.name }}:buildcache'
+          cache-to: 'type=registry,ref=${{ secrets.REGISTRY_URL }}/${{ github.event.repository.name }}:buildcache,mode=max'
 
-      - name: Notification
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-        uses: Ilshidur/action-discord@master
-        with:
-          args: "The project {{ EVENT_PAYLOAD.repository.full_name }} has been deployed."
