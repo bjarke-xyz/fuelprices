@@ -91,7 +91,9 @@ const PriceChange: React.FC<{
 };
 
 export const fetcher = (url: string, now: string, fueltype: Fueltype) =>
-  fetch(`${url}?now=${now}&fueltype=${fueltype}`).then((res) => res.json());
+  fetch(`${url}/prices?now=${now}&fueltype=${fueltype}`).then((res) =>
+    res.json()
+  );
 
 const Home: NextPage<{ fueltype: Fueltype }> = ({ fueltype }) => {
   const [priceChangeState, setPriceChangeState] = useState<{
