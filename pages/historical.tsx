@@ -104,6 +104,7 @@ const Historical: NextPage<{ fueltype: Fueltype }> = ({ fueltype }) => {
                 value={inputFrom}
                 onChange={(e) => setInputFrom(e.target.value)}
                 type="date"
+                className="bg-white text-slate-700 border border-solid border-slate-300 rounded transition"
               ></input>
             </div>
             <div className="border p-2 rounded">
@@ -115,6 +116,7 @@ const Historical: NextPage<{ fueltype: Fueltype }> = ({ fueltype }) => {
                 value={inputTo}
                 onChange={(e) => setInputTo(e.target.value)}
                 type="date"
+                className="bg-white text-slate-700 border border-solid border-slate-300 rounded transition"
               ></input>
             </div>
           </div>
