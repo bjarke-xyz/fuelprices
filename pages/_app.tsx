@@ -4,10 +4,10 @@ import { Header } from "../components/header";
 import { Footer } from "../components/footer";
 import { useState } from "react";
 
-export type Fueltype = "octane95" | "diesel" | "octane100";
+export type Fueltype = "unleaded95" | "diesel" | "octane100";
 
 function MyApp({ Component, pageProps }: AppProps) {
-  const [fueltype, setFueltype] = useState<Fueltype>("octane95");
+  const [fueltype, setFueltype] = useState<Fueltype>("unleaded95");
   return (
     <div className="h-screen flex flex-col">
       <Header fueltype={fueltype} setFueltype={setFueltype} />
