@@ -1,16 +1,9 @@
-import {
-  addDays,
-  format,
-  isFuture,
-  parse,
-  parseISO,
-  sub,
-  subDays,
-} from "date-fns";
+import { addDays, format, isFuture, parseISO, subDays } from "date-fns";
 import type { NextPage } from "next";
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import useSWR from "swr";
-import { API_URL, OK_DATE_FORMAT } from "../utils/constants";
+import { API_URL } from "../utils/constants";
 import { Fueltype } from "./_app";
 
 interface DayPrice {
@@ -99,6 +92,8 @@ const Home: NextPage<{ fueltype: Fueltype }> = ({ fueltype }) => {
     day: DayKind;
   } | null>(null);
 
+  const router = useRouter();
+
   const [now, setNow] = useState(new Date());
   const [nowParam, setNowParam] = useState<string>(format(now, "yyyy-MM-dd"));
 
@@ -109,6 +104,12 @@ const Home: NextPage<{ fueltype: Fueltype }> = ({ fueltype }) => {
 
   useEffect(() => {
     const newNowParam = format(now, "yyyy-MM-dd");
+    router.push({
+      pathname: "/",
+      query: {
+        now: newNowParam,
+      },
+    });
     setNowParam(newNowParam);
   }, [now]);
 
