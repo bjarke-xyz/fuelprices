@@ -38,14 +38,17 @@ const PriceDisplay: React.FC<{
   price: DayPrice | null;
   day: DayKind;
   toggleDisplayChanges: () => void;
-}> = ({ loading, price, day, toggleDisplayChanges }) => {
+  active: boolean;
+}> = ({ loading, price, day, toggleDisplayChanges, active }) => {
   const hasPriceChanged = (price?.prevPrices ?? []).length > 0;
 
   return (
     <div
-      className={`transition flex flex-col rounded-md shadow-lg p-4 hover:bg-slate-800 bg-slate-700 text-white dark:hover:bg-slate-200 dark:bg-slate-50 dark:text-slate-900 ${
+      className={`transition flex flex-col rounded-md shadow-lg p-4 hover:bg-slate-800 bg-slate-700 text-white dark:hover:bg-slate-300 dark:bg-slate-50 dark:text-slate-900 ${
         hasPriceChanged ? "cursor-pointer" : "cursor-auto"
-      } ${loading ? "animate-pulse" : ""}`}
+      } ${loading ? "animate-pulse" : ""} ${
+        active ? "bg-slate-800 dark:bg-slate-300 shadow-sm" : ""
+      }`}
       title={hasPriceChanged ? "Price has changed" : ""}
       role={hasPriceChanged ? "button" : "none"}
       onClick={() => hasPriceChanged && toggleDisplayChanges()}
@@ -113,7 +116,7 @@ const Home: NextPage<{ fueltype: Fueltype }> = ({ fueltype }) => {
     prevPrices: DayPrice["prevPrices"],
     day: DayKind
   ) => {
-    if (priceChangeState) {
+    if (priceChangeState?.day === day) {
       setPriceChangeState(null);
     } else {
       setPriceChangeState({
@@ -158,6 +161,7 @@ const Home: NextPage<{ fueltype: Fueltype }> = ({ fueltype }) => {
               loading={!data}
               price={data?.prices?.yesterday ?? null}
               day={"Yesterday"}
+              active={priceChangeState?.day === "Yesterday"}
               toggleDisplayChanges={() =>
                 toggleShowPriceChange(
                   data?.prices.yesterday?.prevPrices ?? [],
@@ -169,6 +173,7 @@ const Home: NextPage<{ fueltype: Fueltype }> = ({ fueltype }) => {
               loading={!data}
               price={data?.prices?.today ?? null}
               day={"Today"}
+              active={priceChangeState?.day === "Today"}
               toggleDisplayChanges={() =>
                 toggleShowPriceChange(
                   data?.prices?.today?.prevPrices ?? [],
@@ -180,6 +185,7 @@ const Home: NextPage<{ fueltype: Fueltype }> = ({ fueltype }) => {
               loading={!data}
               price={data?.prices?.tomorrow ?? null}
               day={"Tomorrow"}
+              active={priceChangeState?.day === "Tomorrow"}
               toggleDisplayChanges={() =>
                 toggleShowPriceChange(
                   data?.prices?.tomorrow?.prevPrices ?? [],
