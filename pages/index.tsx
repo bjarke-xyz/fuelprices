@@ -1,86 +1,206 @@
-import type { NextPage } from 'next'
-import Head from 'next/head'
-import Image from 'next/image'
+import {
+  addDays,
+  format,
+  isFuture,
+  parse,
+  parseISO,
+  sub,
+  subDays,
+} from "date-fns";
+import type { NextPage } from "next";
+import { useEffect, useState } from "react";
+import useSWR from "swr";
+import { API_URL, OK_DATE_FORMAT } from "../utils/constants";
+import { Fueltype } from "./_app";
 
-const Home: NextPage = () => {
-  return (
-    <div className="flex min-h-screen flex-col items-center justify-center py-2">
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-
-      <main className="flex w-full flex-1 flex-col items-center justify-center px-20 text-center">
-        <h1 className="text-6xl font-bold">
-          Welcome to{' '}
-          <a className="text-blue-600" href="https://nextjs.org">
-            Next.js!
-          </a>
-        </h1>
-
-        <p className="mt-3 text-2xl">
-          Get started by editing{' '}
-          <code className="rounded-md bg-gray-100 p-3 font-mono text-lg">
-            pages/index.tsx
-          </code>
-        </p>
-
-        <div className="mt-6 flex max-w-4xl flex-wrap items-center justify-around sm:w-full">
-          <a
-            href="https://nextjs.org/docs"
-            className="mt-6 w-96 rounded-xl border p-6 text-left hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Documentation &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Find in-depth information about Next.js features and its API.
-            </p>
-          </a>
-
-          <a
-            href="https://nextjs.org/learn"
-            className="mt-6 w-96 rounded-xl border p-6 text-left hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Learn &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Learn about Next.js in an interactive course with quizzes!
-            </p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/canary/examples"
-            className="mt-6 w-96 rounded-xl border p-6 text-left hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Examples &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Discover and deploy boilerplate example Next.js projects.
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className="mt-6 w-96 rounded-xl border p-6 text-left hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Deploy &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
-
-      <footer className="flex h-24 w-full items-center justify-center border-t">
-        <a
-          className="flex items-center justify-center gap-2"
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
-        </a>
-      </footer>
-    </div>
-  )
+interface DayPrice {
+  date: string;
+  price: number;
+  prevPrices: {
+    detectionTimestamp: string;
+    price: number;
+  }[];
 }
 
-export default Home
+type DayKind = "Today" | "Yesterday" | "Tomorrow";
+
+interface PriceResponse {
+  message: string;
+  prices: {
+    today: DayPrice | null;
+    tomorrow: DayPrice | null;
+    yesterday: DayPrice | null;
+  };
+}
+
+const PriceDisplay: React.FC<{
+  loading: boolean;
+  price: DayPrice | null;
+  day: DayKind;
+  toggleDisplayChanges: () => void;
+}> = ({ loading, price, day, toggleDisplayChanges }) => {
+  const hasPriceChanged = (price?.prevPrices ?? []).length > 0;
+
+  return (
+    <div
+      className={`transition flex flex-col rounded-md shadow-lg p-4 hover:bg-slate-800 bg-slate-700 text-white dark:hover:bg-slate-200 dark:bg-slate-50 dark:text-slate-900 ${
+        hasPriceChanged ? "cursor-pointer" : "cursor-auto"
+      } ${loading ? "animate-pulse" : ""}`}
+      title={hasPriceChanged ? "Price has changed" : ""}
+      role={hasPriceChanged ? "button" : "none"}
+      onClick={() => hasPriceChanged && toggleDisplayChanges()}
+    >
+      <div className="text-xl">
+        {day}
+        {hasPriceChanged && <span className="text-red-500">*</span>}
+      </div>
+      <div className="text-center">{price?.price ?? "??.??"} kr</div>
+    </div>
+  );
+};
+
+const PriceChange: React.FC<{
+  prevPrices: DayPrice["prevPrices"];
+  day: DayKind;
+}> = ({ prevPrices, day }) => {
+  return (
+    <div className="bg-red-100 text-slate-900 rounded-md shadow-lg p-4 m-4 flex justify-center">
+      <table className="table-fixed">
+        <thead className="bg-gray-50">
+          <tr>
+            <th className="px-4 py-2 ">Changed detected at</th>
+            <th className="px-4 py-2 ">Price before change</th>
+          </tr>
+        </thead>
+        <tbody>
+          {prevPrices.map((p) => (
+            <tr key={p.detectionTimestamp}>
+              <td className="px-4 py-2">
+                {format(parseISO(p.detectionTimestamp), "yyyy-MM-dd HH:mm:ss")}
+              </td>
+              <td className="px-4 py-2">{p.price} kr</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+export const fetcher = (url: string, now: string, fueltype: Fueltype) =>
+  fetch(`${url}?now=${now}&fueltype=${fueltype}`).then((res) => res.json());
+
+const Home: NextPage<{ fueltype: Fueltype }> = ({ fueltype }) => {
+  const [priceChangeState, setPriceChangeState] = useState<{
+    prevPrices: DayPrice["prevPrices"];
+    day: DayKind;
+  } | null>(null);
+
+  const [now, setNow] = useState(new Date());
+  const [nowParam, setNowParam] = useState<string>(format(now, "yyyy-MM-dd"));
+
+  const { data, error } = useSWR<PriceResponse>(
+    [API_URL, nowParam, fueltype],
+    fetcher
+  );
+
+  useEffect(() => {
+    const newNowParam = format(now, "yyyy-MM-dd");
+    setNowParam(newNowParam);
+  }, [now]);
+
+  const toggleShowPriceChange = (
+    prevPrices: DayPrice["prevPrices"],
+    day: DayKind
+  ) => {
+    if (priceChangeState) {
+      setPriceChangeState(null);
+    } else {
+      setPriceChangeState({
+        day,
+        prevPrices,
+      });
+    }
+  };
+
+  const changeDate = (direction: "left" | "right") => {
+    let newNow: Date;
+    if (direction === "left") {
+      newNow = subDays(now, 1);
+    } else {
+      newNow = addDays(now, 1);
+    }
+    if (!isFuture(newNow)) {
+      setNow(newNow);
+    }
+  };
+
+  return (
+    <div>
+      <div className="flex justify-center">
+        <button
+          onClick={() => changeDate("left")}
+          className="mr-2"
+          title="Day before"
+        >
+          👈
+        </button>
+        <div className="text-lg mr-2">{format(now, "eee dd LLL yyyy")}</div>
+        <button onClick={() => changeDate("right")} title="Next day">
+          ️👉
+        </button>
+      </div>
+      {error && <p>An error has occurred</p>}
+      {!error && (
+        <div>
+          <div className="flex flex-wrap justify-evenly mt-6">
+            <PriceDisplay
+              loading={!data}
+              price={data?.prices?.yesterday ?? null}
+              day={"Yesterday"}
+              toggleDisplayChanges={() =>
+                toggleShowPriceChange(
+                  data?.prices.yesterday?.prevPrices ?? [],
+                  "Yesterday"
+                )
+              }
+            ></PriceDisplay>
+            <PriceDisplay
+              loading={!data}
+              price={data?.prices?.today ?? null}
+              day={"Today"}
+              toggleDisplayChanges={() =>
+                toggleShowPriceChange(
+                  data?.prices?.today?.prevPrices ?? [],
+                  "Today"
+                )
+              }
+            ></PriceDisplay>
+            <PriceDisplay
+              loading={!data}
+              price={data?.prices?.tomorrow ?? null}
+              day={"Tomorrow"}
+              toggleDisplayChanges={() =>
+                toggleShowPriceChange(
+                  data?.prices?.tomorrow?.prevPrices ?? [],
+                  "Tomorrow"
+                )
+              }
+            ></PriceDisplay>
+          </div>
+
+          <div className="mt-4">
+            {priceChangeState !== null && (
+              <PriceChange
+                day={priceChangeState.day}
+                prevPrices={priceChangeState.prevPrices}
+              />
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Home;
