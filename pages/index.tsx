@@ -1,4 +1,4 @@
-import { addDays, format, isFuture, parseISO, subDays } from "date-fns";
+import { addDays, format, isFuture, parse, parseISO, subDays } from "date-fns";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -83,6 +83,18 @@ const PriceChange: React.FC<{
   );
 };
 
+function getInitialDate() {
+  const queryParams = new URLSearchParams(
+    typeof window !== "undefined" ? window?.location.search : ""
+  );
+  const initialDate = parse(
+    queryParams.get("now") ?? format(new Date(), "yyyy-MM-dd"),
+    "yyyy-MM-dd",
+    new Date()
+  );
+  return initialDate;
+}
+
 export const fetcher = (url: string, now: string, fueltype: Fueltype) =>
   fetch(`${url}/prices?now=${now}&type=${fueltype}`).then((res) => res.json());
 
@@ -94,7 +106,7 @@ const Home: NextPage<{ fueltype: Fueltype }> = ({ fueltype }) => {
 
   const router = useRouter();
 
-  const [now, setNow] = useState(new Date());
+  const [now, setNow] = useState(getInitialDate());
   const [nowParam, setNowParam] = useState<string>(format(now, "yyyy-MM-dd"));
 
   const { data, error } = useSWR<PriceResponse>(
