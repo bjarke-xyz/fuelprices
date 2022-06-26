@@ -64,7 +64,7 @@ const PriceChange: React.FC<{
       <table className="table-fixed">
         <thead className="bg-gray-50">
           <tr>
-            <th className="px-4 py-2 ">Changed detected at</th>
+            <th className="px-4 py-2 ">Change detected at</th>
             <th className="px-4 py-2 ">Price before change</th>
           </tr>
         </thead>
