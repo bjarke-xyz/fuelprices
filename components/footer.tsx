@@ -1,7 +1,7 @@
 import { useTheme } from "../hooks/theme-context";
 
 export const Footer: React.FC = () => {
-  const { dark, toggle } = useTheme();
+  const { theme, toggle } = useTheme();
   return (
     <footer className="p-2">
       <div className="flex flex-row justify-around text-sm">
@@ -12,7 +12,9 @@ export const Footer: React.FC = () => {
           </a>
         </div>
         <button title="Toggle color theme" onClick={() => toggle()}>
-          {dark ? "🌞" : "🌚"}
+          {theme === "auto" && "🌓"}
+          {theme === "dark" && "🌚"}
+          {theme === "light" && "🌞"}
         </button>
       </div>
     </footer>

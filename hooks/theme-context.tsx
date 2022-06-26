@@ -1,12 +1,51 @@
 import React from "react";
 
+type ThemeType = "light" | "dark" | "auto";
+
+function storageGet(): ThemeType {
+  return (localStorage.getItem("theme") ?? "auto") as ThemeType;
+}
+
+function storageSet(theme: ThemeType) {
+  localStorage.setItem("theme", theme);
+}
+
+function getPrefersDarkColorScheme() {
+  const prefersDarkColorScheme = window.matchMedia(
+    "(prefers-color-scheme: dark)"
+  );
+  return prefersDarkColorScheme;
+}
+
+function setDocumentThemeClass(prefersDarkColorScheme: MediaQueryList) {
+  const theme = storageGet();
+  switch (theme) {
+    case "auto":
+      {
+        const darkOS = prefersDarkColorScheme.matches;
+        if (darkOS) {
+          document.documentElement.classList.add("dark");
+        } else {
+          document.documentElement.classList.remove("dark");
+        }
+      }
+      break;
+    case "dark":
+      document.documentElement.classList.add("dark");
+      break;
+    case "light":
+      document.documentElement.classList.remove("dark");
+      break;
+  }
+}
+
 interface ThemeContext {
-  dark: boolean;
+  theme: ThemeType;
   toggle: () => void;
 }
 
 const defaultContextData: ThemeContext = {
-  dark: false,
+  theme: "auto",
   toggle: () => {},
 };
 
@@ -14,31 +53,22 @@ const themeContext = React.createContext(defaultContextData);
 const useTheme = () => React.useContext(themeContext);
 
 interface ThemeState {
-  dark: boolean;
+  theme: ThemeType;
 }
 const useEffectDarkMode = (): [
   ThemeState,
   React.Dispatch<React.SetStateAction<ThemeState>>
 ] => {
   const [themeState, setThemeState] = React.useState<ThemeState>({
-    dark: false,
+    theme: "auto",
   });
 
   React.useEffect(() => {
-    function setTheme(prefersDarkColorScheme: MediaQueryList) {
-      const darkOS = prefersDarkColorScheme.matches;
-      if (darkOS) {
-        document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-      }
-      setThemeState({ ...themeState, dark: darkOS });
-    }
-    const prefersDarkColorScheme = window.matchMedia(
-      "(prefers-color-scheme: dark)"
-    );
-    setTheme(prefersDarkColorScheme);
-    const eventListenerHandler = () => setTheme(prefersDarkColorScheme);
+    const prefersDarkColorScheme = getPrefersDarkColorScheme();
+    setDocumentThemeClass(prefersDarkColorScheme);
+    setThemeState({ theme: storageGet() });
+    const eventListenerHandler = () =>
+      setDocumentThemeClass(prefersDarkColorScheme);
     prefersDarkColorScheme.addEventListener("change", eventListenerHandler);
 
     return function cleanup() {
@@ -56,19 +86,36 @@ const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [themeState, setThemeState] = useEffectDarkMode();
 
   const toggle = () => {
-    const dark = !themeState.dark;
-    if (dark) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
+    let nextState: ThemeType = "auto";
+    const prefersDarkColorScheme = getPrefersDarkColorScheme();
+    switch (themeState.theme) {
+      case "auto":
+        {
+          // If we are already in dark mode, go to light mode
+          const darkOS = prefersDarkColorScheme.matches;
+          if (darkOS) {
+            nextState = "light";
+          } else {
+            nextState = "dark";
+          }
+        }
+        break;
+      case "dark":
+        nextState = "light";
+        break;
+      case "light":
+        nextState = "auto";
+        break;
     }
-    setThemeState({ dark });
+    storageSet(nextState);
+    setDocumentThemeClass(prefersDarkColorScheme);
+    setThemeState({ theme: nextState });
   };
 
   return (
     <themeContext.Provider
       value={{
-        dark: themeState.dark,
+        theme: themeState.theme,
         toggle,
       }}
     >
