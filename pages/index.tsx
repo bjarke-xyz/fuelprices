@@ -148,6 +148,7 @@ const Home: NextPage<{ fueltype: Fueltype }> = ({ fueltype }) => {
     }
     if (!isFuture(newNow)) {
       setNow(newNow);
+      setPriceChangeState(null);
     }
   };
 
