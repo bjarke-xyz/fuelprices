@@ -9,12 +9,12 @@ import {
   Title,
   Tooltip,
 } from "chart.js";
-import { format, parse, subDays } from "date-fns";
+import { format, parse, parseISO, subDays } from "date-fns";
 import { NextPage } from "next";
 import { useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
 import useSWR from "swr";
-import { API_URL, OK_DATE_FORMAT } from "../utils/constants";
+import { API_URL } from "../utils/constants";
 import { Fueltype } from "./_app";
 
 ChartJS.register(
@@ -77,7 +77,7 @@ const Historical: NextPage<{ fueltype: Fueltype }> = ({ fueltype }) => {
 
   const chartData: ChartData<"line", number[], string> = {
     labels: (data ?? []).map((x) => {
-      const date = parse(x.date, OK_DATE_FORMAT, staticNow);
+      const date = parseISO(x.date);
       return format(date, "yyyy-MM-dd");
     }),
     datasets: [
