@@ -115,6 +115,10 @@ const Home: NextPage<{ fueltype: Fueltype }> = ({ fueltype }) => {
   );
 
   useEffect(() => {
+    setPriceChangeState(null);
+  }, [fueltype]);
+
+  useEffect(() => {
     const newNowParam = format(now, "yyyy-MM-dd");
     router.push({
       pathname: "/",
