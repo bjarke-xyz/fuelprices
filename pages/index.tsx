@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import useSWR from "swr";
 import { API_URL } from "../utils/constants";
-import { Fueltype } from "./_app";
+import { Appearance, Fueltype } from "./_app";
 
 interface DayPrice {
   date: string;
@@ -98,7 +98,10 @@ function getInitialDate() {
 export const fetcher = (url: string, now: string, fueltype: Fueltype) =>
   fetch(`${url}/prices?now=${now}&type=${fueltype}`).then((res) => res.json());
 
-const Home: NextPage<{ fueltype: Fueltype }> = ({ fueltype }) => {
+const Home: NextPage<{ fueltype: Fueltype; appearance: Appearance }> = ({
+  fueltype,
+  appearance,
+}) => {
   const [priceChangeState, setPriceChangeState] = useState<{
     prevPrices: DayPrice["prevPrices"];
     day: DayKind;
@@ -120,11 +123,20 @@ const Home: NextPage<{ fueltype: Fueltype }> = ({ fueltype }) => {
 
   useEffect(() => {
     const newNowParam = format(now, "yyyy-MM-dd");
+    const queryObj = {
+      now: newNowParam,
+      bgColor: appearance.bgColor as string | undefined,
+      textColor: appearance.textColor as string | undefined,
+    };
+    if (!queryObj.bgColor) {
+      delete queryObj.bgColor;
+    }
+    if (!queryObj.textColor) {
+      delete queryObj.textColor;
+    }
     router.push({
       pathname: "/",
-      query: {
-        now: newNowParam,
-      },
+      query: queryObj,
     });
     setNowParam(newNowParam);
   }, [now]);
