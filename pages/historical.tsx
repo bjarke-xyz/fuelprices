@@ -27,9 +27,9 @@ ChartJS.register(
   Legend
 );
 
-interface HistoricalPrice {
-  date: string;
-  price: number;
+interface HistoricalPriceResult {
+  dates: string[];
+  prices: number[];
 }
 
 export const fetcher = (
@@ -39,7 +39,7 @@ export const fetcher = (
   to: Date
 ) =>
   fetch(
-    `${url}/prices/all?type=${fueltype}&from=${format(
+    `${url}/v2/prices/all?type=${fueltype}&from=${format(
       from,
       "yyyy-MM-dd"
     )}&to=${format(to, "yyyy-MM-dd")}`
@@ -53,7 +53,7 @@ const Historical: NextPage<{ fueltype: Fueltype }> = ({ fueltype }) => {
   );
   const [to, setTo] = useState<Date>(new Date());
   const [inputTo, setInputTo] = useState<string>(format(to, "yyyy-MM-dd"));
-  const { data, error } = useSWR<HistoricalPrice[]>(
+  const { data, error } = useSWR<HistoricalPriceResult>(
     [API_URL, fueltype, from, to],
     fetcher
   );
@@ -76,14 +76,14 @@ const Historical: NextPage<{ fueltype: Fueltype }> = ({ fueltype }) => {
   }, [inputTo]);
 
   const chartData: ChartData<"line", number[], string> = {
-    labels: (data ?? []).map((x) => {
-      const date = parseISO(x.date);
+    labels: ((data ?? {})?.dates ?? []).map((dateStr) => {
+      const date = parseISO(dateStr);
       return format(date, "yyyy-MM-dd");
     }),
     datasets: [
       {
         label: fueltype,
-        data: (data ?? []).map((x) => x.price),
+        data: ((data ?? {})?.prices ?? []),
         borderColor: "rgb(255, 99, 132)",
         backgroundColor: "rgba(255, 99, 132, 0.5)",
       },
