@@ -39,7 +39,7 @@ export const fetcher = (
   to: Date
 ) =>
   fetch(
-    `${url}/v2/prices/all?type=${fueltype}&from=${format(
+    `/api/price-trends?type=${fueltype}&from=${format(
       from,
       "yyyy-MM-dd"
     )}&to=${format(to, "yyyy-MM-dd")}`
@@ -55,7 +55,8 @@ const Historical: NextPage<{ fueltype: Fueltype }> = ({ fueltype }) => {
   const [inputTo, setInputTo] = useState<string>(format(to, "yyyy-MM-dd"));
   const { data, error } = useSWR<HistoricalPriceResult>(
     [API_URL, fueltype, from, to],
-    fetcher
+    // FIXME: any use. this started giving an error after @cloudflare/workers-types was added to tsconfig
+    fetcher as any
   );
 
   useEffect(() => {

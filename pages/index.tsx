@@ -37,11 +37,9 @@ const PriceDisplay: React.FC<{
 
   return (
     <div
-      className={`transition flex flex-col rounded-md shadow-lg p-4 hover:bg-slate-800 bg-slate-700 text-white dark:hover:bg-slate-300 dark:bg-slate-50 dark:text-slate-900 ${
-        hasPriceChanged ? "cursor-pointer" : "cursor-auto"
-      } ${loading ? "animate-pulse" : ""} ${
-        active ? "bg-slate-800 dark:bg-slate-300 shadow-sm" : ""
-      }`}
+      className={`transition flex flex-col rounded-md shadow-lg p-4 hover:bg-slate-800 bg-slate-700 text-white dark:hover:bg-slate-300 dark:bg-slate-50 dark:text-slate-900 ${hasPriceChanged ? "cursor-pointer" : "cursor-auto"
+        } ${loading ? "animate-pulse" : ""} ${active ? "bg-slate-800 dark:bg-slate-300 shadow-sm" : ""
+        }`}
       title={hasPriceChanged ? "Price has changed" : ""}
       role={hasPriceChanged ? "button" : "none"}
       onClick={() => hasPriceChanged && toggleDisplayChanges()}
@@ -96,7 +94,7 @@ function getInitialDate() {
 }
 
 export const fetcher = (url: string, now: string, fueltype: Fueltype) =>
-  fetch(`${url}/prices?now=${now}&type=${fueltype}`).then((res) => res.json());
+  fetch(`/api/prices?now=${now}&type=${fueltype}`).then((res) => res.json());
 
 const Home: NextPage<{ fueltype: Fueltype; appearance: Appearance }> = ({
   fueltype,
@@ -114,7 +112,8 @@ const Home: NextPage<{ fueltype: Fueltype; appearance: Appearance }> = ({
 
   const { data, error } = useSWR<PriceResponse>(
     [API_URL, nowParam, fueltype],
-    fetcher
+    // FIXME: any use. this started giving an error after @cloudflare/workers-types was added to tsconfig
+    fetcher as any
   );
 
   useEffect(() => {
