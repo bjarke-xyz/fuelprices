@@ -47,6 +47,10 @@ const OverUnder: NextPage<{ fueltype: Fueltype }> = ({ fueltype }) => {
         }
     }, [inputFrom]);
     useEffect(() => {
+        setVisibleDataIndex(1);
+        setGuesses([]);
+    }, [from])
+    useEffect(() => {
         if (!data) return;
         setVisibleData({
             dates: data.dates.slice(0, visibleDataIndex),
@@ -68,6 +72,7 @@ const OverUnder: NextPage<{ fueltype: Fueltype }> = ({ fueltype }) => {
         ],
     };
     const chartOptions = {
+        maintainAspectRatio: false,
         scales: {
             y: {
                 ticks: {
@@ -88,7 +93,6 @@ const OverUnder: NextPage<{ fueltype: Fueltype }> = ({ fueltype }) => {
         const currentDate = parseISO(currentDateStr!);
         const nextPrice = data.prices[visibleDataIndex];
         const nextDateStr = (data.dates[visibleDataIndex]);
-        console.log(currentDateStr, nextDateStr)
         const nextDate = parseISO(nextDateStr)
         if (!nextPrice || !currentPrice) return;
         setGuesses(currentGuesses => [{ currentPrice, currentDate, nextPrice, nextDate, guess: btn }, ...currentGuesses])
@@ -110,7 +114,7 @@ const OverUnder: NextPage<{ fueltype: Fueltype }> = ({ fueltype }) => {
                 </form>
             </div>
             <div>
-                <Line data={chartData} options={chartOptions} />
+                <Line data={chartData} options={chartOptions} height="300px" />
             </div>
             <div className="text-center text-lg p-2">
                 {data && visibleData.prices.length > 0 && visibleData.dates.length > 0
@@ -129,9 +133,11 @@ const OverUnder: NextPage<{ fueltype: Fueltype }> = ({ fueltype }) => {
                 <OverUnderButton text="Under" disabled={!data || (visibleDataIndex + 1) >= data.prices.length} onClick={() => handleButtonClick('under')} />
                 <OverUnderButton text="Over" disabled={!data || (visibleDataIndex + 1) >= data.prices.length} onClick={() => handleButtonClick('over')} />
             </div>
-            <div className="flex justify-center mt-4">
-                <OverUnderHistory guesses={guesses} />
-            </div>
+            {guesses.length > 0 ? (
+                <div className="flex justify-center mt-4 mx-2">
+                    <OverUnderHistory guesses={guesses} />
+                </div>
+            ) : null}
         </div>
     )
 }
@@ -142,7 +148,7 @@ interface OverUnderHistoryProps {
 const OverUnderHistory: React.FC<OverUnderHistoryProps> = ({ guesses }) => {
 
     return (
-        <table className="table-auto border-spacing-4 border border-slate-400 border-separate">
+        <table className="table-auto border-spacing-2 border-spacing-y-4 border border-slate-400 border-separate rounded">
             <tbody>
                 {guesses.map((guess, i) => (
                     <OverUnderHistoryRow key={i} guess={guess} />
@@ -193,7 +199,7 @@ const OverUnderHistoryRow: React.FC<{ guess: GuessOutcome }> = ({ guess }) => {
             <td>
                 {guess.guess}
             </td>
-            <td className={`p-4 ${reaction === "correct" ? 'bg-green-200' : reaction === 'incorrect' ? 'bg-red-200' : reaction === 'na' ? 'bg-gray-300' : null}`}>
+            <td className={`p-4 rounded-sm ${reaction === "correct" ? 'bg-green-200' : reaction === 'incorrect' ? 'bg-red-200' : reaction === 'na' ? 'bg-gray-300' : null}`}>
                 {reactionEmoji}
             </td>
         </tr>
@@ -209,7 +215,7 @@ interface OverUnderButtonProps {
 const OverUnderButton: React.FC<OverUnderButtonProps> = ({ text, onClick, disabled }) => {
     return (
         <button disabled={disabled} onClick={onClick}
-            className="bg-emerald-200 hover:bg-emerald-300 disabled:bg-gray-300 w-32 h-32 rounded shadow disabled:shadow-none">
+            className="bg-emerald-200 hover:bg-emerald-300 disabled:bg-gray-300 dark:text-slate-900 w-32 h-32 rounded shadow disabled:shadow-none">
             {text}
         </button>
     )
