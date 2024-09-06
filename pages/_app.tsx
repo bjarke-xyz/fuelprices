@@ -50,7 +50,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           style={inlineStyle}
         >
           <Header fueltype={fueltype} setFueltype={setFueltype} />
-          <main className="mb-auto mt-10">
+          <main className="mb-auto mt-4">
             <Component
               {...pageProps}
               fueltype={fueltype}

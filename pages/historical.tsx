@@ -27,7 +27,7 @@ ChartJS.register(
   Legend
 );
 
-interface HistoricalPriceResult {
+export interface HistoricalPriceResult {
   dates: string[];
   prices: number[];
 }
