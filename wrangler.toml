@@ -1,5 +1,0 @@
-
-[[ d1_databases ]]
-binding = "DB" # i.e. available in your Worker on env.DB
-database_name = "fuelprices_db2"
-database_id = "fd99bffe-a651-479a-b7be-c00df74cee58"

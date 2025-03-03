@@ -1,28 +1,40 @@
 {
+  "name": "fuelprices",
   "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "dev": "BROWSER=none wrangler pages dev --d1 DB=fd99bffe-a651-479a-b7be-c00df74cee58 --binding JOB_KEY=1234 --compatibility-date=2024-05-12 --proxy 3000 -- next dev",
-    "build": "next build",
-    "start": "next start"
+    "dev": "vite",
+    "dev-api": "bun run --port=8080 ./src/app.ts",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "@cloudflare/workers-types": "^4.20240502.0",
-    "chart.js": "^3.8.0",
-    "date-fns": "^2.28.0",
-    "next": "latest",
-    "react": "18.1.0",
-    "react-chartjs-2": "^4.2.0",
-    "react-dom": "18.1.0",
-    "swr": "^1.3.0",
-    "wrangler": "^3.55.0"
+    "@libsql/kysely-libsql": "^0.4.1",
+    "@tailwindcss/vite": "^4.0.9",
+    "chart.js": "^4.4.8",
+    "date-fns": "^4.1.0",
+    "hono": "^4.7.2",
+    "kysely": "^0.27.6",
+    "react": "^19.0.0",
+    "react-chartjs-2": "^5.3.0",
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.2.0",
+    "swr": "^2.3.2",
+    "tailwindcss": "^4.0.9"
   },
   "devDependencies": {
-    "@types/node": "17.0.35",
-    "@types/react": "18.0.9",
-    "@types/react-dom": "18.0.5",
-    "autoprefixer": "^10.4.7",
-    "postcss": "^8.4.14",
-    "tailwindcss": "^3.1.2",
-    "typescript": "4.7.2"
+    "@eslint/js": "^9.21.0",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^9.21.0",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^15.15.0",
+    "typescript": "~5.7.2",
+    "typescript-eslint": "^8.24.1",
+    "vite": "^6.2.0"
   }
 }
