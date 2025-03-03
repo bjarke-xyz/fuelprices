@@ -24,6 +24,7 @@ app.post("/api/job", async (c) => {
   const priceRepository = new PriceRepository(env);
   const dataFetcher = new DataFetcher(priceRepository);
   await dataFetcher.fetchData();
+  return c.text("success", 200);
 });
 
 app.get("/api/price-trends", async (c) => {
