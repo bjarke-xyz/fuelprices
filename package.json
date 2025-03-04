@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "dev-api": "bun run --port=8080 ./src/app.ts",
+    "dev": "tsc -b && vite build && bun run ./src/app.ts",
+    "dev-api": "bun run ./src/app.ts",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"

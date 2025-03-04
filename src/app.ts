@@ -88,6 +88,12 @@ app.get("/api/prices", async (c) => {
   }
 });
 
-app.get("*", serveStatic({ root: "./dist" }));
+app.get(
+  "/assets/*",
+  serveStatic({
+    root: "./dist",
+  })
+);
+app.get("*", serveStatic({ path: "./dist/index.html" }));
 
 export default app;
