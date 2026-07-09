@@ -24,3 +24,10 @@ dist-ssr
 *.sw?
 
 .env
+
+# Compiled Go binary
+/fuelprices
+
+# SQLite database and its journal
+*.db
+*.db-journal

@@ -1,35 +1,31 @@
-# use the official Bun image
-# see all versions at https://hub.docker.com/r/oven/bun/tags
-FROM oven/bun:1 AS base
-WORKDIR /usr/src/app
+# Build the frontend. Its output is embedded into the Go binary, so it must
+# exist before the Go build runs.
+FROM node:22-alpine AS frontend
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY tsconfig*.json vite.config.ts index.html ./
+COPY frontend/ ./frontend/
+COPY public/ ./public/
+RUN npm run build
 
-# install dependencies into temp directory
-# this will cache them and speed up future builds
-FROM base AS install
-RUN mkdir -p /temp/dev
-COPY package.json bun.lock /temp/dev/
-RUN cd /temp/dev && bun install --frozen-lockfile
+FROM golang:1.26 AS backend
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
+COPY main.go ./
+COPY internal/ ./internal/
+COPY migrations/ ./migrations/
+COPY --from=frontend /app/dist/ ./dist/
+# modernc.org/sqlite is pure Go, so the binary is static and needs no libc.
+RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o /fuelprices .
 
-# install with --production (exclude devDependencies)
-RUN mkdir -p /temp/prod
-COPY package.json bun.lock /temp/prod/
-RUN cd /temp/prod && bun install --frozen-lockfile --production
+FROM gcr.io/distroless/static-debian12:nonroot
+COPY --from=backend /fuelprices /fuelprices
 
-# copy node_modules from temp directory
-# then copy all (non-ignored) project files into the image
-FROM base AS prerelease
-COPY --from=install /temp/dev/node_modules node_modules
-COPY . .
+# The SQLite database lives here and must be backed by persistent storage.
+VOLUME /data
+ENV DB_PATH=/data/fuelprices.db
+EXPOSE 3000
 
-# build frontend
-RUN bun run build
-
-# copy production dependencies and source code into final image
-FROM base AS release
-COPY --from=install /temp/prod/node_modules node_modules
-COPY --from=prerelease /usr/src/app/src/. ./src/
-COPY --from=prerelease /usr/src/app/dist/ ./dist
-
-# run the app
-USER bun
-ENTRYPOINT [ "bun", "run", "src/app.ts" ]
+ENTRYPOINT ["/fuelprices"]

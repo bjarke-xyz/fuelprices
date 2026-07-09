@@ -4,19 +4,16 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "tsc -b && vite build && bun run ./src/app.ts",
-    "dev-api": "bun run ./src/app.ts",
+    "dev": "vite",
+    "dev-api": "go run .",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
-    "@libsql/kysely-libsql": "^0.4.1",
     "@tailwindcss/vite": "^4.0.9",
     "chart.js": "^4.4.8",
     "date-fns": "^4.1.0",
-    "hono": "^4.7.2",
-    "kysely": "^0.27.6",
     "react": "^19.0.0",
     "react-chartjs-2": "^5.3.0",
     "react-dom": "^19.0.0",
