@@ -17,6 +17,7 @@ import (
 	_ "time/tzdata"
 
 	"github.com/bjarke-xyz/fuelprices/internal/fuel"
+	"github.com/bjarke-xyz/fuelprices/internal/logging"
 	"github.com/bjarke-xyz/fuelprices/internal/server"
 	_ "modernc.org/sqlite"
 )
@@ -28,6 +29,7 @@ var distFS embed.FS
 var schema string
 
 func main() {
+	logging.Setup()
 	if err := run(); err != nil {
 		slog.Error("fatal", "error", err)
 		os.Exit(1)
