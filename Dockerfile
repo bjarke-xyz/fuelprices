@@ -1,6 +1,6 @@
 # Build the frontend. Its output is embedded into the Go binary, so it must
 # exist before the Go build runs.
-FROM node:22-alpine AS frontend
+FROM --platform=$BUILDPLATFORM node:22-alpine AS frontend
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
@@ -9,7 +9,9 @@ COPY frontend/ ./frontend/
 COPY public/ ./public/
 RUN npm run build
 
-FROM golang:1.26 AS backend
+FROM --platform=$BUILDPLATFORM golang:1.27-alpine AS backend
+ARG TARGETOS
+ARG TARGETARCH
 WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
@@ -18,7 +20,7 @@ COPY internal/ ./internal/
 COPY migrations/ ./migrations/
 COPY --from=frontend /app/dist/ ./dist/
 # modernc.org/sqlite is pure Go, so the binary is static and needs no libc.
-RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o /fuelprices .
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags="-s -w" -o /fuelprices .
 
 FROM gcr.io/distroless/static-debian12:nonroot
 COPY --from=backend /fuelprices /fuelprices
